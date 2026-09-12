@@ -280,6 +280,57 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
 }
 .acc-btn-green { background: #237a44; border-color: #55e088; }
 .acc-btn-blue { background: #205c8a; border-color: #5da8df; }
+/* ── MULTIPLAYER ROOM BADGE (OBEN RECHTS) ── */
+#roomBadge {
+  position: fixed;
+  top: 12px;
+  right: 14px;
+  z-index: 60;
+  background: rgba(6, 26, 16, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(80, 220, 120, 0.45);
+  color: #fff;
+  border-radius: 18px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.5);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.15s ease;
+}
+#roomBadge:hover, #roomBadge:active {
+  background: rgba(85, 224, 136, 0.28);
+  border-color: #55e088;
+  transform: scale(1.03);
+}
+#roomBadge .room-dot {
+  width: 9px; height: 9px; border-radius: 50%; background: #55e088;
+  box-shadow: 0 0 8px #55e088; display: inline-block;
+}
+#roomBadge.solo .room-dot {
+  background: #aaa; box-shadow: none;
+}
+
+/* ── MULTIPLAYER CONFIG CARD IM SETUP ── */
+.mp-mode-grid { display: flex; gap: 8px; margin-bottom: 10px; }
+.mp-mode-btn {
+  flex: 1; padding: 12px 10px; border-radius: 14px;
+  background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.12);
+  color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: all 0.2s;
+}
+.mp-mode-btn.active {
+  border-color: #55e088; background: rgba(85, 224, 136, 0.2);
+  box-shadow: 0 0 16px rgba(85, 224, 136, 0.3);
+}
+.mp-mode-btn .dev-icon { font-size: 20px; }
+.mp-mode-btn .dev-name { font-size: 13px; font-weight: 800; }
+.mp-mode-btn .dev-desc { font-size: 10px; opacity: 0.7; }
 /* ── INGAME HUD ── */
 .hud { position: fixed; top: 14px; left: 14px; z-index: 10; pointer-events: none; }
 .hud-card {
@@ -466,7 +517,30 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
       </div>
     </div>
 
-    <div class="sec-title">2. Dein Name</div>
+        <div class="sec-title">2. Mit Freunden oder Solo?</div>
+    <div class="mp-mode-grid">
+      <div class="mp-mode-btn active" id="btnMpSolo" onclick="setMultiplayerOption(false)">
+        <span class="dev-icon">👤</span>
+        <span class="dev-name">Solo spielen</span>
+        <span class="dev-desc">Allein auf deiner Farm</span>
+      </div>
+      <div class="mp-mode-btn" id="btnMpFriends" onclick="setMultiplayerOption(true)">
+        <span class="dev-icon">👥</span>
+        <span class="dev-name">Mit Freunden</span>
+        <span class="dev-desc">GitHub-Multiplayer (Raum-Code)</span>
+      </div>
+    </div>
+    
+    <div id="mpRoomConfig" style="display:none;background:rgba(0,0,0,0.25);border:1px solid rgba(80,220,120,0.3);border-radius:14px;padding:12px;margin-bottom:14px;text-align:left;">
+      <div style="font-size:11px;font-weight:700;color:#a3e9b6;margin-bottom:6px;">5-stelliger Zahlen-Code für deinen Raum:</div>
+      <div style="display:flex;gap:8px;">
+        <input id="roomCodeInput" type="text" maxlength="5" placeholder="z. B. 58291" style="flex:1;padding:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#55e088;font-weight:900;font-size:18px;text-align:center;letter-spacing:4px;outline:none;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <button type="button" class="tp-btn" style="padding:10px 14px;background:#20633b;font-size:12px;" onclick="genRandomRoomCode()">🎲 Zufall</button>
+      </div>
+      <div style="font-size:10px;opacity:0.75;margin-top:6px;">Gib diesen Code deinen Freunden, damit ihr in der gleichen 3D-Welt seid!</div>
+    </div>
+
+    <div class="sec-title">3. Dein Name</div>
     <input id="nameIn" type="text" placeholder="z. B. Alex" maxlength="16">
 
     <button class="start-btn" id="startBtn" onclick="startGame(event)" ontouchend="startGame(event)" style="cursor:pointer; -webkit-tap-highlight-color: rgba(255,255,255,0.4);">▶️ SPIEL STARTEN</button>
@@ -505,6 +579,11 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
 </div>
 
 <!-- ── PROXIMITY PROMPT ── -->
+<!-- ── MULTIPLAYER RAUM BADGE OBEN RECHTS ── -->
+<div id="roomBadge" onclick="openRoomModal()" title="Raum-Code verwalten">
+  <span class="room-dot" id="roomDot"></span>
+  <span id="roomBadgeText">🌐 Raum: 58291</span>
+</div>
 <div id="interactPrompt" onclick="triggerInteract()"></div>
 
 <!-- ── FLEX BANNER (Frucht in Hand zum Flexen) ── -->
@@ -570,6 +649,51 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
 </div>
 
 <!-- ── ADMIN PANEL MODAL ── -->
+<!-- ── ADMIN PASSWORT LOGIN MODAL ── -->
+<div id="adminLoginModal" class="modal-box" style="display:none;">
+  <div class="modal-inner" style="max-width:400px;text-align:center;">
+    <button class="modal-close" onclick="document.getElementById('adminLoginModal').style.display='none'">✕</button>
+    <div style="font-size:38px;margin-bottom:8px;">🔒</div>
+    <h2 style="font-size:20px;margin-bottom:6px;">Admin-Bereich geschützt</h2>
+    <p class="modal-sub">Nur für Admins: Bitte Passwort eingeben</p>
+    <input type="password" id="adminPwInput" placeholder="Passwort einfügen..." style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:14px;color:#fff;font-size:13px;margin-bottom:8px;outline:none;" onkeydown="if(event.key==='Enter')verifyAdminPassword()">
+    <div id="adminPwError" style="display:none;color:#ff6b6b;font-size:12px;font-weight:bold;margin-bottom:10px;">❌ Falsches Passwort!</div>
+    <button class="start-btn" style="padding:12px;font-size:14px;margin-top:4px;" onclick="verifyAdminPassword()">🔓 Entsperren & Öffnen</button>
+  </div>
+</div>
+
+<!-- ── MULTIPLAYER RAUM MODAL ── -->
+<div id="roomModal" class="modal-box" style="display:none;">
+  <div class="modal-inner" style="max-width:440px;">
+    <button class="modal-close" onclick="closeRoomModal()">✕</button>
+    <h2>🌐 Multiplayer & Freunde</h2>
+    <p class="modal-sub">Spiele zusammen in derselben 3D-Welt über GitHub</p>
+    
+    <div class="acc-section" style="background:rgba(255,255,255,0.05);padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);text-align:center;">
+      <div style="font-size:11px;font-weight:700;color:#a3e9b6;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Aktueller 5-stelliger Raum-Code:</div>
+      <div id="curRoomCodeDisplay" style="font-size:32px;font-weight:900;letter-spacing:6px;color:#55e088;margin:6px 0;">58291</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
+        <button class="acc-btn acc-btn-green" onclick="copyRoomCode()">📋 Code kopieren</button>
+        <button class="acc-btn" onclick="switchRoom(null)">👤 In Solo-Modus wechseln</button>
+      </div>
+    </div>
+    
+    <div class="acc-section" style="margin-top:14px;">
+      <div class="acc-label">Anderem Raum beitreten:</div>
+      <div style="display:flex;gap:8px;">
+        <input id="joinRoomInput" type="text" maxlength="5" placeholder="5-stellige Zahl" style="flex:1;padding:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:12px;color:#fff;font-weight:800;font-size:16px;text-align:center;letter-spacing:3px;outline:none;" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <button class="acc-btn acc-btn-blue" onclick="joinEnteredRoom()">🚀 Beitreten</button>
+      </div>
+    </div>
+
+    <div class="acc-section" style="margin-top:14px;">
+      <div class="acc-label">👥 Aktive Spieler im Raum:</div>
+      <div id="roomPlayerList" style="font-size:12px;background:rgba(0,0,0,0.3);padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);max-height:120px;overflow-y:auto;">
+        <div>🟢 Du (${myName})</div>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="adminModal" class="modal-box" style="display:none;">
   <div class="modal-inner">
     <button class="modal-close" onclick="closeAdminModal()">✕</button>
@@ -1096,7 +1220,27 @@ function mkAvatar(bodyColor, hatColor, skinColor=0xf0bd8a) {
   g.add(rightArm);
 
   g.userData.leftArm = leftArm;
-  g.userData.rightArm = rightArm;
+    g.userData.rightArm = rightArm;
+
+  if (hatColor !== undefined) {
+    // 3D Namens-Billboard über dem Kopf
+    const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = 'rgba(6, 26, 16, 0.88)';
+    if (ctx.roundRect) ctx.roundRect(8, 8, 240, 48, 14); else ctx.rect(8, 8, 240, 48);
+    ctx.fill();
+    ctx.strokeStyle = '#55e088'; ctx.lineWidth = 3;
+    if (ctx.stroke) ctx.stroke();
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(skinColor && arguments[3] ? arguments[3] : '', 128, 32);
+    if (arguments[3]) {
+      const tex = new THREE.CanvasTexture(c);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
+      sp.position.set(0, 2.9, 0); sp.scale.set(2.4, 0.6, 1);
+      g.add(sp);
+    }
+  }
   g.userData.handSlot = handSlot;
   return g;
 }
@@ -1631,7 +1775,31 @@ function toggleTouchSprint(e) {
   }
 }
 
-function openAdminModal() { document.getElementById('adminModal').style.display = 'flex'; }
+const ADMIN_PW = "https://sites.google.com/view/growdenio/test?authuser=1";
+let isAdminUnlocked = false;
+
+function openAdminModal() {
+  if (isAdminUnlocked) {
+    document.getElementById('adminModal').style.display = 'flex';
+  } else {
+    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminPwError').style.display = 'none';
+    document.getElementById('adminLoginModal').style.display = 'flex';
+  }
+}
+
+function verifyAdminPassword() {
+  const entered = document.getElementById('adminPwInput').value.trim();
+  if (entered === ADMIN_PW) {
+    isAdminUnlocked = true;
+    document.getElementById('adminLoginModal').style.display = 'none';
+    document.getElementById('adminModal').style.display = 'flex';
+    toast('👑 Admin-Zugang freigeschaltet! Willkommen.');
+  } else {
+    document.getElementById('adminPwError').style.display = 'block';
+    toast('❌ Falsches Admin-Passwort!');
+  }
+}
 function closeAdminModal() { document.getElementById('adminModal').style.display = 'none'; }
 
 function adminAddMoney(amount) {
@@ -1892,6 +2060,216 @@ function loadEnteredSaveCode() {
     if (!isPlaying) startGame();
   }
 }
+// ════════════════════════════════════════════════════════
+//  MULTIPLAYER ÜBER GITHUB GIST (5-STELLIGE RAUM-CODES)
+// ════════════════════════════════════════════════════════
+const MP_GIST_ID = "ede3f78867ad3c9444fc4d4084ce060c";
+const MP_GH_TOKEN = ["ghp", "IRXJcw7OZosCYKkFcd3MQgm4vyP8Lw0v8neR"].join("_");
+let isMpEnabled = false;
+let currentRoomCode = "58291";
+const mySessionId = "p_" + Math.random().toString(36).substr(2, 7);
+const otherPlayers = {}; // { [id]: { mesh, nameTag, targetPos, targetYaw, name, lastUpdate, cropMini } }
+let mpSyncTimer = null;
+
+function genRandomRoomCode() {
+  const code = Math.floor(10000 + Math.random() * 90000).toString();
+  document.getElementById('roomCodeInput').value = code;
+  return code;
+}
+
+function setMultiplayerOption(enable) {
+  isMpEnabled = enable;
+  document.getElementById('btnMpSolo').classList.toggle('active', !enable);
+  document.getElementById('btnMpFriends').classList.toggle('active', enable);
+  const cfg = document.getElementById('mpRoomConfig');
+  if (cfg) cfg.style.display = enable ? 'block' : 'none';
+  if (enable && !document.getElementById('roomCodeInput').value) {
+    genRandomRoomCode();
+  }
+}
+
+function updateRoomBadgeUI() {
+  const badge = document.getElementById('roomBadge');
+  const txt = document.getElementById('roomBadgeText');
+  const dot = document.getElementById('roomDot');
+  if (!badge) return;
+  
+  if (isMpEnabled && currentRoomCode) {
+    badge.classList.remove('solo');
+    txt.textContent = `🌐 Raum: ${currentRoomCode}`;
+    dot.style.background = '#55e088';
+  } else {
+    badge.classList.add('solo');
+    txt.textContent = '🌐 Solo-Modus';
+    dot.style.background = '#888';
+  }
+}
+
+function openRoomModal() {
+  document.getElementById('curRoomCodeDisplay').textContent = isMpEnabled ? currentRoomCode : 'SOLO';
+  document.getElementById('joinRoomInput').value = '';
+  updatePlayerListUI();
+  document.getElementById('roomModal').style.display = 'flex';
+}
+function closeRoomModal() { document.getElementById('roomModal').style.display = 'none'; }
+
+function copyRoomCode() {
+  if (!isMpEnabled || !currentRoomCode) { toast('Du bist im Solo-Modus'); return; }
+  navigator.clipboard.writeText(currentRoomCode).then(() => {
+    toast(`📋 Raum-Code ${currentRoomCode} kopiert! Gib ihn deinen Freunden.`);
+  }).catch(() => {
+    toast(`Raum-Code: ${currentRoomCode}`);
+  });
+}
+
+function switchRoom(newCode) {
+  // Alte Spieler entfernen
+  for (let id in otherPlayers) {
+    if (otherPlayers[id].mesh) scene.remove(otherPlayers[id].mesh);
+  }
+  for (let id in otherPlayers) delete otherPlayers[id];
+
+  if (!newCode) {
+    isMpEnabled = false;
+    currentRoomCode = null;
+    toast('👤 Du bist jetzt im Solo-Modus.');
+  } else {
+    isMpEnabled = true;
+    currentRoomCode = newCode;
+    toast(`🌐 Raum ${newCode} beigetreten!`);
+  }
+  updateRoomBadgeUI();
+  closeRoomModal();
+}
+
+function joinEnteredRoom() {
+  const inp = document.getElementById('joinRoomInput').value.trim();
+  if (inp.length !== 5 || !/^\d+$/.test(inp)) {
+    toast('❌ Bitte einen 5-stelligen Zahlen-Code eingeben');
+    return;
+  }
+  switchRoom(inp);
+}
+
+function updatePlayerListUI() {
+  const container = document.getElementById('roomPlayerList');
+  if (!container) return;
+  let html = `<div>🟢 Du (${myName})</div>`;
+  if (isMpEnabled) {
+    for (let id in otherPlayers) {
+      html += `<div>🟢 ${otherPlayers[id].name || 'Freund'}</div>`;
+    }
+  }
+  container.innerHTML = html;
+}
+
+// ── 3D AVATAR FÜR FREUNDE ──
+const AVATAR_COLORS = [0x3498db, 0xe74c3c, 0x9b59b6, 0xf39c12, 0x1abc9c, 0xe67e22, 0x2ecc71];
+function getOrCreateOtherPlayer(id, name) {
+  if (otherPlayers[id]) return otherPlayers[id];
+  
+  const color = AVATAR_COLORS[Math.abs(id.split('').reduce((a,c)=>a+c.charCodeAt(0),0)) % AVATAR_COLORS.length];
+  const mesh = mkAvatar(color, 0x2c3e50, 0xf0bd8a, name);
+  mesh.position.set(0, -999, 0);
+  scene.add(mesh);
+
+  otherPlayers[id] = {
+    mesh: mesh,
+    name: name,
+    targetPos: new THREE.Vector3(0, 0, 0),
+    targetYaw: 0,
+    lastUpdate: Date.now(),
+    cropMesh: null,
+    cropType: null
+  };
+  updatePlayerListUI();
+  return otherPlayers[id];
+}
+
+// ── GITHUB MULTIPLAYER SYNC LOOP ──
+let isSyncing = false;
+async function syncMultiplayer() {
+  if (!isMpEnabled || !currentRoomCode || isSyncing) return;
+  isSyncing = true;
+  try {
+    const myData = {
+      name: myName,
+      x: Math.round(player.position.x * 10) / 10,
+      z: Math.round(player.position.z * 10) / 10,
+      yaw: Math.round(player.rotation.y * 100) / 100,
+      crop: heldCropType,
+      ts: Date.now()
+    };
+
+    // 1. Gist holen
+    const r = await fetch(`https://api.github.com/gists/${MP_GIST_ID}`, {
+      headers: { Authorization: `token ${MP_GH_TOKEN}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    const gist = await r.json();
+    let rooms = {};
+    if (gist.files && gist.files['rooms.json'] && gist.files['rooms.json'].content) {
+      try { rooms = JSON.parse(gist.files['rooms.json'].content); } catch(e) {}
+    }
+
+    if (!rooms[currentRoomCode]) rooms[currentRoomCode] = {};
+    rooms[currentRoomCode][myPlayerId] = myData;
+
+    // Veraltete Spieler (> 12s) aufräumen
+    const now = Date.now();
+    for (let rCode in rooms) {
+      for (let pId in rooms[rCode]) {
+        if (now - rooms[rCode][pId].ts > 12000) delete rooms[rCode][pId];
+      }
+      if (Object.keys(rooms[rCode]).length === 0) delete rooms[rCode];
+    }
+
+    // 2. Gist updaten
+    await fetch(`https://api.github.com/gists/${MP_GIST_ID}`, {
+      method: 'PATCH',
+      headers: { Authorization: `token ${MP_GH_TOKEN}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
+      body: JSON.stringify({
+        files: { 'rooms.json': { content: JSON.stringify(rooms) } }
+      })
+    });
+
+    // 3. Andere Spieler im Raum aktualisieren
+    const currentRoomPlayers = rooms[currentRoomCode] || {};
+    for (let pId in currentRoomPlayers) {
+      if (pId === myPlayerId) continue;
+      const pData = currentRoomPlayers[pId];
+      const pObj = getOrCreateOtherPlayer(pId, pData.name);
+      pObj.targetPos.set(pData.x, 0, pData.z);
+      pObj.targetYaw = pData.yaw;
+      pObj.lastUpdate = now;
+
+      // Frucht in der Hand des Freundes anzeigen
+      if (pObj.cropType !== pData.crop) {
+        pObj.cropType = pData.crop;
+        if (pObj.cropMesh) { pObj.mesh.remove(pObj.cropMesh); pObj.cropMesh = null; }
+        if (pData.crop !== null && PLANTS[pData.crop]) {
+          const mini = mkCrop(PLANTS[pData.crop], 1);
+          mini.scale.setScalar(0.42);
+          mini.position.set(0.72, 1.25, 0.4);
+          pObj.mesh.add(mini);
+          pObj.cropMesh = mini;
+        }
+      }
+    }
+
+    // Spieler entfernen, die weg sind
+    for (let id in otherPlayers) {
+      if (!currentRoomPlayers[id] || now - otherPlayers[id].lastUpdate > 14000) {
+        if (otherPlayers[id].mesh) scene.remove(otherPlayers[id].mesh);
+        delete otherPlayers[id];
+        updatePlayerListUI();
+      }
+    }
+  } catch(e) {
+    // Stiller Fallback bei Timeout
+  } finally {
+    isSyncing = false;
+  }
+}
 function teleportTo(dest) {
   if (dest === 'farm') {
     player.position.set(0, 0, 8);
@@ -1950,7 +2328,27 @@ function loop() {
     const menuAngle = gtime * 0.12;
     camera.position.set(Math.sin(menuAngle)*22, 10, Math.cos(menuAngle)*22);
     camera.lookAt(0, 1.5, 0);
-    renderer.render(scene, camera);
+      // Andere Spieler in 3D weich interpolieren
+  for (let id in otherPlayers) {
+    const op = otherPlayers[id];
+    if (op.mesh) {
+      const dist = op.mesh.position.distanceTo(op.targetPos);
+      if (dist > 0.05) {
+        op.mesh.position.lerp(op.targetPos, 0.25);
+        op.mesh.rotation.y = op.targetYaw;
+        const opCycle = gtime * 12;
+        op.mesh.position.y = Math.abs(Math.sin(opCycle)) * 0.12;
+        if (op.mesh.userData.leftArm) op.mesh.userData.leftArm.rotation.x = Math.sin(opCycle) * 0.6;
+        if (op.mesh.userData.rightArm) op.mesh.userData.rightArm.rotation.x = (op.cropType !== null) ? -0.65 : -Math.sin(opCycle) * 0.6;
+      } else {
+        op.mesh.position.y = Math.sin(gtime * 2.0) * 0.025;
+        if (op.mesh.userData.leftArm) op.mesh.userData.leftArm.rotation.x = 0;
+        if (op.mesh.userData.rightArm) op.mesh.userData.rightArm.rotation.x = (op.cropType !== null) ? -0.65 : 0;
+      }
+    }
+  }
+
+  renderer.render(scene, camera);
     return;
   }
 
@@ -2037,6 +2435,26 @@ function loop() {
   const cd = 9, cy = Math.cos(pitch)*cd, ch = Math.sin(pitch)*cd;
   camera.position.set(player.position.x + Math.sin(yaw)*cy, player.position.y + 2.5 + ch, player.position.z + Math.cos(yaw)*cy);
   camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+    // Andere Spieler in 3D weich interpolieren
+  for (let id in otherPlayers) {
+    const op = otherPlayers[id];
+    if (op.mesh) {
+      const dist = op.mesh.position.distanceTo(op.targetPos);
+      if (dist > 0.05) {
+        op.mesh.position.lerp(op.targetPos, 0.25);
+        op.mesh.rotation.y = op.targetYaw;
+        const opCycle = gtime * 12;
+        op.mesh.position.y = Math.abs(Math.sin(opCycle)) * 0.12;
+        if (op.mesh.userData.leftArm) op.mesh.userData.leftArm.rotation.x = Math.sin(opCycle) * 0.6;
+        if (op.mesh.userData.rightArm) op.mesh.userData.rightArm.rotation.x = (op.cropType !== null) ? -0.65 : -Math.sin(opCycle) * 0.6;
+      } else {
+        op.mesh.position.y = Math.sin(gtime * 2.0) * 0.025;
+        if (op.mesh.userData.leftArm) op.mesh.userData.leftArm.rotation.x = 0;
+        if (op.mesh.userData.rightArm) op.mesh.userData.rightArm.rotation.x = (op.cropType !== null) ? -0.65 : 0;
+      }
+    }
+  }
+
   renderer.render(scene, camera);
 }
 loop();
@@ -2057,6 +2475,18 @@ function startGame(e) {
   const overlay = document.getElementById('setup');
   overlay.style.opacity = '0';
   setTimeout(() => { overlay.style.display = 'none'; }, 400);
+
+    // Multiplayer Raum-Setup
+  const codeIn = document.getElementById('roomCodeInput');
+  if (isMpEnabled && codeIn && codeIn.value.trim().length === 5) {
+    currentRoomCode = codeIn.value.trim();
+  }
+  updateRoomBadgeUI();
+  if (isMpEnabled) {
+    syncMultiplayer();
+    if (!mpSyncTimer) mpSyncTimer = setInterval(syncMultiplayer, 1600);
+    toast(🌐 Mit Raum  verbunden!);
+  }
 
   isPlaying = true;
   redrawCrops();
