@@ -757,9 +757,11 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
 <!-- THREE.JS (Lädt zuerst lokal, schaltet bei fehlender Datei automatisch auf Online-CDN um) -->
 <script src="./three.min.js"></script>
 <script>
-  if (typeof THREE === 'undefined') {
-    document.write('<script src="https://unpkg.com/three@0.160.0/build/three.min.js"><\/script>');
-  }
+if (typeof THREE === 'undefined') {
+  const s = document.createElement('script');
+  s.src = 'https://unpkg.com/three@0.160.0/build/three.min.js';
+  document.head.appendChild(s);
+}
 </script>
 
 <script>
@@ -2485,7 +2487,7 @@ function startGame(e) {
   if (isMpEnabled) {
     syncMultiplayer();
     if (!mpSyncTimer) mpSyncTimer = setInterval(syncMultiplayer, 1600);
-    toast(🌐 Mit Raum  verbunden!);
+    toast('🌐 Mit Raum ' + currentRoomCode + ' verbunden!');
   }
 
   isPlaying = true;
