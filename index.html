@@ -158,29 +158,31 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
 }
 .mp-box p { font-size: 11px; opacity: 0.7; margin-bottom: 8px; line-height: 1.4; }
 
-/* ── TELEPORT LEISTE OBEN ── */
+/* ── TELEPORT & TOP BAR ── */
 #tpBar {
   position: fixed;
-  top: 14px;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 60;
   display: flex;
-  gap: 8px;
-  background: rgba(6, 26, 16, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  gap: 6px;
+  background: rgba(6, 26, 16, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 6px 12px;
   border-radius: 20px;
-  border: 1px solid rgba(80, 220, 120, 0.35);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+  border: 1.5px solid rgba(80, 220, 120, 0.4);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+  max-width: 95vw;
+  overflow-x: auto;
 }
 .tp-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #fff;
-  border-radius: 14px;
-  padding: 6px 12px;
+  border-radius: 12px;
+  padding: 6px 10px;
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
@@ -194,6 +196,90 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
   border-color: #55e088;
   transform: scale(1.04);
 }
+.tp-btn-acc { background: rgba(52, 152, 219, 0.22); border-color: rgba(52, 152, 219, 0.45); color: #a9d9fc; }
+.tp-btn-acc:hover, .tp-btn-acc:active { background: rgba(52, 152, 219, 0.4); border-color: #3498db; }
+.tp-btn-admin { background: rgba(241, 196, 15, 0.22); border-color: rgba(241, 196, 15, 0.45); color: #f9e79f; }
+.tp-btn-admin:hover, .tp-btn-admin:active { background: rgba(241, 196, 15, 0.4); border-color: #f1c40f; }
+
+/* ── TOUCH SPRINT BUTTON (IPAD / HANDY) ── */
+#sprintToggleBtn {
+  position: fixed;
+  bottom: 160px;
+  left: 28px;
+  z-index: 25;
+  background: rgba(10, 35, 22, 0.88);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: #fff;
+  border-radius: 16px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  cursor: pointer;
+  display: none;
+  touch-action: manipulation;
+}
+#sprintToggleBtn.active {
+  background: #27ae60;
+  border-color: #55e088;
+  box-shadow: 0 0 16px rgba(85, 224, 136, 0.6);
+}
+
+/* ── MODALS (ADMIN & ACCOUNT) ── */
+.modal-box {
+  position: fixed; inset: 0; z-index: 1500;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(4, 16, 10, 0.78);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  padding: 16px;
+  touch-action: manipulation;
+}
+.modal-inner {
+  background: rgba(10, 32, 22, 0.96);
+  border: 1.5px solid rgba(80, 220, 120, 0.4);
+  border-radius: 26px;
+  padding: 24px 22px;
+  width: min(520px, 95vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  color: #fff;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 35px rgba(46, 160, 90, 0.2);
+  position: relative;
+  text-align: left;
+}
+.modal-close {
+  position: absolute; right: 16px; top: 16px;
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; border-radius: 12px; padding: 6px 12px; font-weight: 800; cursor: pointer;
+}
+.modal-close:hover { background: rgba(231, 76, 60, 0.4); border-color: #e74c3c; }
+.modal-sub { font-size: 12px; opacity: 0.75; margin-bottom: 16px; }
+.admin-grid { display: flex; flex-direction: column; gap: 12px; }
+.admin-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 12px; }
+.admin-card h3 { font-size: 13px; font-weight: 800; margin-bottom: 8px; color: #a3e9b6; text-transform: uppercase; letter-spacing: 0.5px; }
+.admin-btn-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.admin-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; border-radius: 10px; padding: 8px 12px; font-size: 12px; font-weight: 800;
+  cursor: pointer; transition: all 0.15s; touch-action: manipulation;
+}
+.admin-btn:active, .admin-btn:hover { background: rgba(85, 224, 136, 0.25); border-color: #55e088; }
+.admin-btn-highlight { background: rgba(243, 156, 18, 0.25); border-color: #f39c12; color: #f9e79f; }
+.admin-btn-danger { background: rgba(231, 76, 60, 0.2); border-color: #e74c3c; color: #f5b7b1; }
+.acc-section { margin-bottom: 14px; }
+.acc-label { font-size: 12px; font-weight: 800; margin-bottom: 6px; color: #a4f4be; }
+.acc-section textarea {
+  width: 100%; padding: 10px; border-radius: 12px; background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.18); color: #8fdab0; font-family: monospace; font-size: 11px;
+  resize: none; outline: none; word-break: break-all;
+}
+.acc-btn {
+  padding: 9px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08); color: #fff; font-size: 12px; font-weight: 800; cursor: pointer;
+  touch-action: manipulation;
+}
+.acc-btn-green { background: #237a44; border-color: #55e088; }
+.acc-btn-blue { background: #205c8a; border-color: #5da8df; }
 /* ── INGAME HUD ── */
 .hud { position: fixed; top: 14px; left: 14px; z-index: 10; pointer-events: none; }
 .hud-card {
@@ -384,6 +470,7 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
     <input id="nameIn" type="text" placeholder="z. B. Alex" maxlength="16">
 
     <button class="start-btn" id="startBtn" onclick="startGame(event)" ontouchend="startGame(event)" style="cursor:pointer; -webkit-tap-highlight-color: rgba(255,255,255,0.4);">▶️ SPIEL STARTEN</button>
+    <button type="button" class="start-btn" style="background:#1b4d3e;margin-top:8px;padding:12px;font-size:14px;" onclick="openAccountModal()">🔑 Mit Account-Code anmelden</button>
     <button type="button" style="width:100%;margin-top:8px;padding:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:rgba(255,255,255,0.7);font-size:11px;font-weight:700;cursor:pointer;" onclick="resetSave()">🔄 Spielstand zurücksetzen (Start mit $10)</button>
 
     <div class="mp-toggle" onclick="toggleMPBox()">⚙️ Multiplayer & Cloud-Save (Optional)</div>
@@ -410,9 +497,11 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
 <div id="mpStatus" class="hud-card hud-small">🌐 Freunde online</div>
 <!-- ── TELEPORT LEISTE (SCHNELLREISE OBEN) ── -->
 <div id="tpBar">
-  <button class="tp-btn" onclick="teleportTo('farm')" ontouchend="teleportTo('farm')">🌾 Mein Garten</button>
-  <button class="tp-btn" onclick="teleportTo('seedShop')" ontouchend="teleportTo('seedShop')">🛒 Samen-Shop</button>
+  <button class="tp-btn" onclick="teleportTo('farm')" ontouchend="teleportTo('farm')">🌾 Beete</button>
+  <button class="tp-btn" onclick="teleportTo('seedShop')" ontouchend="teleportTo('seedShop')">🛒 Shop</button>
   <button class="tp-btn" onclick="teleportTo('sellShop')" ontouchend="teleportTo('sellShop')">💰 Markt</button>
+  <button class="tp-btn tp-btn-acc" onclick="openAccountModal()" ontouchend="openAccountModal()">💾 Account</button>
+  <button class="tp-btn tp-btn-admin" onclick="openAdminModal()" ontouchend="openAdminModal()">👑 Admin</button>
 </div>
 
 <!-- ── PROXIMITY PROMPT ── -->
@@ -445,10 +534,95 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
 </div>
 
 <div id="joy"><div id="stick"></div></div>
+<button id="sprintToggleBtn" onclick="toggleTouchSprint(event)" ontouchend="toggleTouchSprint(event)">🏃 Sprint: AUS</button>
 <div id="pcHint">WASD = Laufen · Shift = Sprint · Rechtsklick+Maus = Kamera · E = Aktion · F = Gießen · R = Ernten · Tab = Samen</div>
 <div id="toast"></div>
 
 <!-- ── SEED SHOP MODAL ── -->
+<!-- ── ACCOUNT & SAVE-CODE MODAL (100% SCHUL-IPAD SICHER) ── -->
+<div id="accountModal" class="modal-box" style="display:none;">
+  <div class="modal-inner">
+    <button class="modal-close" onclick="closeAccountModal()">✕</button>
+    <h2>💾 Dein Account & Save-Code</h2>
+    <p class="modal-sub">Funktioniert 100% ohne GitHub – geschützt vor Jamf Trust!</p>
+    
+    <div class="acc-section">
+      <div class="acc-label">📋 Dein aktueller Account-Code (Zum Mitnehmen auf andere iPads):</div>
+      <textarea id="mySaveCodeArea" readonly rows="3"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <button class="acc-btn acc-btn-green" onclick="copyCurrentSaveCode()">📋 Code kopieren</button>
+        <button class="acc-btn" onclick="downloadSaveFile()">📁 Als .txt Datei sichern</button>
+      </div>
+    </div>
+    
+    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.15);margin:16px 0;">
+    
+    <div class="acc-section">
+      <div class="acc-label">📥 Anderen Account / Code laden (Anmelden):</div>
+      <textarea id="importCodeArea" placeholder="Füge deinen Save-Code (beginnt mit GW2#...) hier ein..." rows="3"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <button class="acc-btn acc-btn-blue" onclick="loadEnteredSaveCode()">🚀 Spielstand jetzt laden</button>
+        <button class="acc-btn" onclick="document.getElementById('saveFileInput').click()">📂 .txt Datei öffnen</button>
+        <input type="file" id="saveFileInput" accept=".txt" style="display:none;" onchange="handleSaveFile(this)">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN PANEL MODAL ── -->
+<div id="adminModal" class="modal-box" style="display:none;">
+  <div class="modal-inner">
+    <button class="modal-close" onclick="closeAdminModal()">✕</button>
+    <h2>👑 Admin- & Cheat-Panel</h2>
+    <p class="modal-sub">Exklusiv: Cheats, Speed-Multiplikator & Sofort-Wachstum</p>
+    
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h3>💰 Geld Cheats</h3>
+        <div class="admin-btn-row">
+          <button class="admin-btn" onclick="adminAddMoney(1000)">+$1.000</button>
+          <button class="admin-btn" onclick="adminAddMoney(50000)">+$50.000</button>
+          <button class="admin-btn" onclick="adminAddMoney(1000000)">+$1.000.000</button>
+          <button class="admin-btn" onclick="adminAddMoney(1000000000)">+$1 Mrd.</button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>⚡ Wachstums-Cheats</h3>
+        <div class="admin-btn-row">
+          <button class="admin-btn admin-btn-highlight" onclick="adminInstaGrow()">⚡ Alle Pflanzen sofort reif (Status 5)!</button>
+          <button class="admin-btn" onclick="adminWaterAll()">💧 Alle Beete kostenlos gießen</button>
+          <button class="admin-btn" onclick="adminHarvestAll()">🧺 Alles auf einmal ernten</button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>🌱 Samen & Inventar</h3>
+        <div class="admin-btn-row">
+          <button class="admin-btn" onclick="adminGiveAllSeeds(10)">🌱 +10 von ALLEN 28 Samenarten</button>
+          <button class="admin-btn" onclick="adminGiveAllSeeds(100)">📦 +100 von allen Samen</button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>🏃 Lauf-Geschwindigkeit</h3>
+        <div class="admin-btn-row">
+          <button class="admin-btn" onclick="adminSetSpeed(1.0)">🏃 Normal (Schnell)</button>
+          <button class="admin-btn" onclick="adminSetSpeed(1.7)">🚀 Turbo-Speed (1.7x)</button>
+          <button class="admin-btn" onclick="adminSetSpeed(2.6)">⚡ Flash-Speed (2.6x)</button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>🧹 Welt & Beete</h3>
+        <div class="admin-btn-row">
+          <button class="admin-btn admin-btn-danger" onclick="adminClearPlots()">🧹 Alle Beete leeren</button>
+          <button class="admin-btn admin-btn-danger" onclick="resetSave()">🔄 Spielstand auf Anfang ($10)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="shop">
   <button id="closeShop" onclick="document.getElementById('shop').style.display='none'">✕ Schließen</button>
   <h2>🛒 Sam's Samen-Laden</h2>
@@ -1441,6 +1615,283 @@ renderer.domElement.addEventListener('pointermove', e => {
 });
 window.addEventListener('pointerup', () => { camDown = false; });
 
+// ════════════════════════════════════════════════════════
+//  ADMIN & SPEED STATE
+// ════════════════════════════════════════════════════════
+let adminSpeedMultiplier = 1.0;
+let isTouchSprinting = false;
+
+function toggleTouchSprint(e) {
+  if (e && e.cancelable && e.type === 'touchend') e.preventDefault();
+  isTouchSprinting = !isTouchSprinting;
+  const btn = document.getElementById('sprintToggleBtn');
+  if (btn) {
+    btn.classList.toggle('active', isTouchSprinting);
+    btn.textContent = isTouchSprinting ? '⚡ Sprint: AN' : '🏃 Sprint: AUS';
+  }
+}
+
+function openAdminModal() { document.getElementById('adminModal').style.display = 'flex'; }
+function closeAdminModal() { document.getElementById('adminModal').style.display = 'none'; }
+
+function adminAddMoney(amount) {
+  money += amount;
+  saveLocal();
+  updateHUD();
+  toast(`💰 +$${amount.toLocaleString()} gutgeschrieben!`);
+}
+
+function adminInstaGrow() {
+  let count = 0;
+  plots.forEach(p => {
+    if (p.plant) {
+      p.plant.ready = true;
+      p.plant.readyAt = Date.now();
+      p.plant.water = Date.now();
+      count++;
+    }
+  });
+  saveLocal();
+  redrawCrops();
+  updateHUD();
+  toast(`⚡ Alle ${count} Pflanzen sind sofort reif (Status 5)!`);
+}
+
+function adminWaterAll() {
+  let count = 0;
+  plots.forEach(p => {
+    if (p.plant && !p.plant.ready) {
+      p.plant.water = Date.now();
+      p.plant.readyAt = Math.max(Date.now() + 1000, p.plant.readyAt - 180000);
+      count++;
+    }
+  });
+  saveLocal();
+  redrawCrops();
+  updateHUD();
+  toast(`💧 ${count} Beete gegossen!`);
+}
+
+function adminHarvestAll() {
+  let count = 0;
+  plots.forEach(p => {
+    if (p.plant && (p.plant.ready || Date.now() >= p.plant.readyAt)) {
+      basket[p.plant.type] = (basket[p.plant.type] || 0) + 1;
+      p.plant = null;
+      count++;
+    }
+  });
+  saveLocal();
+  redrawCrops();
+  updateHUD();
+  toast(`🧺 ${count} reife Früchte ins Inventar gelegt!`);
+}
+
+function adminGiveAllSeeds(qty) {
+  PLANTS.forEach((p, idx) => {
+    seeds[idx] = (seeds[idx] || 0) + qty;
+  });
+  saveLocal();
+  updateHUD();
+  toast(`🌱 +${qty} Samen aller 28 Sorten erhalten!`);
+}
+
+function adminSetSpeed(mult) {
+  adminSpeedMultiplier = mult;
+  toast(`🏃 Speed-Multiplikator auf ${mult}x gesetzt!`);
+}
+
+function adminClearPlots() {
+  if (confirm("Möchtest du wirklich alle Beete auf dem Feld leeren?")) {
+    plots.forEach(p => p.plant = null);
+    saveLocal();
+    redrawCrops();
+    updateHUD();
+    toast('🧹 Alle Beete geleert.');
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  KOMPAKTER ACCOUNT- & SAVE-CODE (100% SCHUL-IPAD SICHER)
+// ════════════════════════════════════════════════════════
+function exportSaveCode() {
+  const sParts = [];
+  for (let k in seeds) {
+    if (seeds[k] > 0) sParts.push(`${k}=${seeds[k]}`);
+  }
+  const bParts = [];
+  for (let k in basket) {
+    if (basket[k] > 0) bParts.push(`${k}=${basket[k]}`);
+  }
+  const pParts = [];
+  plots.forEach((p, idx) => {
+    if (!p.plant) {
+      pParts.push(`${idx}:-1:0:0`);
+    } else {
+      const type = p.plant.type;
+      const totalGrow = PLANTS[type] ? PLANTS[type].grow : 60;
+      if (p.plant.ready || Date.now() >= p.plant.readyAt) {
+        pParts.push(`${idx}:${type}:5:0`); // 5 = komplett ausgewachsen!
+      } else {
+        const remSec = Math.max(1, Math.round((p.plant.readyAt - Date.now()) / 1000));
+        const progress = Math.max(0, Math.min(1, 1 - (remSec / totalGrow)));
+        const status = Math.min(4, Math.max(1, Math.floor(progress * 4) + 1));
+        pParts.push(`${idx}:${type}:${status}:${remSec}`);
+      }
+    }
+  });
+
+  return `GW2#${encodeURIComponent(myName)}#${money}#${sParts.join(',')}#${bParts.join(',')}#${pParts.join(',')}`;
+}
+
+function importSaveCode(codeStr) {
+  if (!codeStr || !codeStr.trim()) {
+    toast('❌ Bitte einen Code eingeben');
+    return false;
+  }
+  const clean = codeStr.trim();
+  try {
+    if (clean.startsWith('GW2#')) {
+      const parts = clean.split('#');
+      if (parts.length >= 6) {
+        myName = decodeURIComponent(parts[1] || 'Farmer');
+        money = parseInt(parts[2]) || 10;
+        
+        seeds = {};
+        if (parts[3]) {
+          parts[3].split(',').forEach(item => {
+            const kv = item.split('=');
+            if (kv.length === 2) seeds[parseInt(kv[0])] = parseInt(kv[1]);
+          });
+        }
+        
+        basket = {};
+        if (parts[4]) {
+          parts[4].split(',').forEach(item => {
+            const kv = item.split('=');
+            if (kv.length === 2) basket[parseInt(kv[0])] = parseInt(kv[1]);
+          });
+        }
+        
+        if (parts[5]) {
+          const pList = parts[5].split(',');
+          pList.forEach(item => {
+            const segs = item.split(':');
+            if (segs.length >= 4) {
+              const idx = parseInt(segs[0]);
+              const type = parseInt(segs[1]);
+              const status = parseInt(segs[2]);
+              const remSec = parseInt(segs[3]) || 0;
+              
+              if (plots[idx]) {
+                if (status === 0 || type < 0) {
+                  plots[idx].plant = null;
+                } else if (status === 5 || remSec <= 0) {
+                  plots[idx].plant = {
+                    type: type,
+                    ready: true,
+                    readyAt: Date.now(),
+                    water: Date.now()
+                  };
+                } else {
+                  plots[idx].plant = {
+                    type: type,
+                    ready: false,
+                    readyAt: Date.now() + (remSec * 1000),
+                    water: 0
+                  };
+                }
+              }
+            }
+          });
+        }
+        
+        saveLocal();
+        redrawCrops();
+        updateHUD();
+        toast(`✅ Account "${myName}" erfolgreich geladen!`);
+        return true;
+      }
+    }
+    
+    // Fallback JSON
+    const s = JSON.parse(clean);
+    if (s && s.money !== undefined) {
+      money = s.money;
+      seeds = s.seeds || {};
+      plots = s.plots || plots;
+      basket = s.basket || {};
+      myName = s.name || myName;
+      saveLocal();
+      redrawCrops();
+      updateHUD();
+      toast(`✅ Spielstand "${myName}" geladen!`);
+      return true;
+    }
+  } catch(e) {
+    toast('❌ Ungültiger Account-Code');
+    return false;
+  }
+  toast('❌ Format nicht erkannt');
+  return false;
+}
+
+function openAccountModal() {
+  document.getElementById('mySaveCodeArea').value = exportSaveCode();
+  document.getElementById('importCodeArea').value = '';
+  document.getElementById('accountModal').style.display = 'flex';
+}
+function closeAccountModal() { document.getElementById('accountModal').style.display = 'none'; }
+
+function copyCurrentSaveCode() {
+  const code = exportSaveCode();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      toast('📋 Account-Code kopiert! Speichere ihn in deinen Notizen.');
+    }).catch(() => fallbackCopy());
+  } else {
+    fallbackCopy();
+  }
+  function fallbackCopy() {
+    const ta = document.getElementById('mySaveCodeArea');
+    ta.focus();
+    ta.select();
+    document.execCommand('copy');
+    toast('📋 Account-Code kopiert!');
+  }
+}
+
+function downloadSaveFile() {
+  const code = exportSaveCode();
+  const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `grow_save_${myName.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  toast('📁 Save-Datei gespeichert!');
+}
+
+function handleSaveFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const text = e.target.result;
+    document.getElementById('importCodeArea').value = text;
+    loadEnteredSaveCode();
+  };
+  reader.readAsText(file);
+}
+
+function loadEnteredSaveCode() {
+  const code = document.getElementById('importCodeArea').value.trim();
+  if (importSaveCode(code)) {
+    closeAccountModal();
+    if (!isPlaying) startGame();
+  }
+}
 function teleportTo(dest) {
   if (dest === 'farm') {
     player.position.set(0, 0, 8);
@@ -1469,6 +1920,8 @@ function applyDeviceModeUI() {
   } else {
     joy.style.display = 'block';
     document.getElementById('pcHint').style.display = 'none';
+    const sBtn = document.getElementById('sprintToggleBtn');
+    if (sBtn) sBtn.style.display = 'block';
     if (hotbar) {
       hotbar.style.left = '50%';
       hotbar.style.right = 'auto';
@@ -1537,7 +1990,7 @@ function loop() {
     moveForward = -jstick.y;
     moveRight = jstick.x;
   }
-  const isSprinting = (K.ShiftLeft || K.ShiftRight);
+  const isSprinting = (K.ShiftLeft || K.ShiftRight || isTouchSprinting);
   const spd = isSprinting ? 0.19 : 0.11;
   const fwd = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
   const rgt = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
