@@ -716,7 +716,7 @@ set qos(a){this._setQos(a)},get retained(){return this._getRetained()},set retai
 
 <script>
 // GROW WORLD 3D ENGINE
-// Grow World 3D - Classic Garden & 3D Blumen
+// Grow World 3D - Classic Garden, 3D Blumen & 360°-Kamera
 const ADMIN_PASSWORD_HASH = "https://sites.google.com/view/growdenio/test?authuser=1";
 
 // ── PFLANZEN & BLUMEN ──
@@ -755,7 +755,7 @@ function fmtMoney(val) {
   return "$" + Math.floor(val);
 }
 
-// ── TEXTUREN ──
+// ── TEXTUREN & MATERIALIEN ──
 function makeNoiseTex(c1, c2, size=128) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
@@ -779,13 +779,27 @@ const TEX_SOIL = makeNoiseTex('#4a2e10', '#321e07');
 const TEX_SOIL_WET = makeNoiseTex('#241506', '#120a02');
 const TEX_WOOD = makeNoiseTex('#8d5524', '#5c3817');
 
+// MATERIAL-FACTORY: Garantiert, dass Boxen NIEMALS unsichtbar werden!
+function getMaterial(colorOrMat) {
+  if (typeof colorOrMat === 'number') {
+    return new THREE.MeshStandardMaterial({ color: colorOrMat, roughness: 0.8 });
+  }
+  if (colorOrMat && colorOrMat.isTexture) {
+    return new THREE.MeshStandardMaterial({ map: colorOrMat, roughness: 0.85 });
+  }
+  if (colorOrMat && colorOrMat.isMaterial) {
+    return colorOrMat;
+  }
+  return new THREE.MeshStandardMaterial({ color: 0x8d5524, roughness: 0.8 });
+}
+
 // ── THREE.JS SCENE SETUP ──
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.FogExp2(0x87ceeb, 0.014);
+scene.fog = new THREE.FogExp2(0x87ceeb, 0.012);
 
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.2, 350);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.2, 400);
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
@@ -793,35 +807,33 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.getElementById('game').appendChild(renderer.domElement);
 
 // Lichter
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x446644, 0.8);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x446644, 0.85);
 scene.add(hemiLight);
 
-const sunLight = new THREE.DirectionalLight(0xfffaed, 1.25);
-sunLight.position.set(25, 50, 35);
+const sunLight = new THREE.DirectionalLight(0xfffaed, 1.3);
+sunLight.position.set(30, 60, 40);
 sunLight.castShadow = true;
 sunLight.shadow.mapSize.width = 2048;
 sunLight.shadow.mapSize.height = 2048;
 sunLight.shadow.camera.near = 10;
-sunLight.shadow.camera.far = 150;
-sunLight.shadow.camera.left = -40;
-sunLight.shadow.camera.right = 40;
-sunLight.shadow.camera.top = 40;
-sunLight.shadow.camera.bottom = -40;
+sunLight.shadow.camera.far = 160;
+sunLight.shadow.camera.left = -45;
+sunLight.shadow.camera.right = 45;
+sunLight.shadow.camera.top = 45;
+sunLight.shadow.camera.bottom = -45;
 scene.add(sunLight);
 
 // Grasboden
-const groundGeo = new THREE.PlaneGeometry(240, 240);
+const groundGeo = new THREE.PlaneGeometry(260, 260);
 const groundMat = new THREE.MeshStandardMaterial({ map: TEX_GRASS, roughness: 0.95 });
 const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// Box Hilfsfunktion
+// Box Hilfsfunktion mit sicherem Material
 function addBox(w, h, d, colorOrMat, x, y, z, cast=true, receive=true) {
-  const mat = (typeof colorOrMat === 'number')
-    ? new THREE.MeshStandardMaterial({ color: colorOrMat, roughness: 0.8 })
-    : colorOrMat;
+  const mat = getMaterial(colorOrMat);
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
   mesh.position.set(x, y + h/2, z);
   mesh.castShadow = cast;
@@ -833,15 +845,26 @@ function addBox(w, h, d, colorOrMat, x, y, z, cast=true, receive=true) {
 // ── SAMEN-SHOP (Ostseite: x = +24, z = -14) ──
 (function buildSeedShop() {
   const cx = 24, cz = -14;
-  addBox(12, 4.5, 7, TEX_WOOD, cx, 0, cz);
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(8, 3, 4), new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.7 }));
-  roof.position.set(cx, 6, cz);
+  // Wände aus Holz
+  addBox(12, 4.5, 7, 0x8d5524, cx, 0, cz);
+  // Dach (grün)
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(8.2, 3.2, 4), new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.7 }));
+  roof.position.set(cx, 6.1, cz);
   roof.rotation.y = Math.PI / 4;
   roof.castShadow = true;
   scene.add(roof);
-  addBox(6, 1.2, 0.2, 0x2ecc71, cx, 3.8, cz + 3.6);
-  addBox(1.8, 2.8, 0.15, 0x3d2714, cx, 0, cz + 3.6);
-  const light = new THREE.PointLight(0xffeaa7, 1.2, 12);
+  // Holz-Vordach Stützen
+  addBox(0.25, 3.5, 0.25, 0x5c3817, cx - 5.5, 0, cz + 4.2);
+  addBox(0.25, 3.5, 0.25, 0x5c3817, cx + 5.5, 0, cz + 4.2);
+  // Großes Schild
+  addBox(6.5, 1.3, 0.25, 0x2ecc71, cx, 3.8, cz + 3.6);
+  // Tür
+  addBox(1.8, 2.9, 0.18, 0x3d2714, cx, 0, cz + 3.6);
+  // Fenster
+  addBox(1.6, 1.2, 0.15, 0x74b9ff, cx - 3.4, 2.2, cz + 3.6);
+  addBox(1.6, 1.2, 0.15, 0x74b9ff, cx + 3.4, 2.2, cz + 3.6);
+  // Laterne
+  const light = new THREE.PointLight(0xffeaa7, 1.4, 14);
   light.position.set(cx, 3.2, cz + 4.2);
   scene.add(light);
 })();
@@ -849,15 +872,33 @@ function addBox(w, h, d, colorOrMat, x, y, z, cast=true, receive=true) {
 // ── VERKAUFSHAUS (Westseite: x = -24, z = -14) ──
 (function buildSellShop() {
   const cx = -24, cz = -14;
-  addBox(12, 4.5, 7, TEX_WOOD, cx, 0, cz);
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(8, 3, 4), new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.7 }));
-  roof.position.set(cx, 6, cz);
+  // Wände aus Holz
+  addBox(12, 4.5, 7, 0x8d5524, cx, 0, cz);
+  // Dach (rot)
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(8.2, 3.2, 4), new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.7 }));
+  roof.position.set(cx, 6.1, cz);
   roof.rotation.y = Math.PI / 4;
   roof.castShadow = true;
   scene.add(roof);
-  addBox(6, 1.2, 0.2, 0xf1c40f, cx, 3.8, cz + 3.6);
-  addBox(1.8, 2.8, 0.15, 0x3d2714, cx, 0, cz + 3.6);
-  addBox(5.0, 1.1, 1.4, TEX_WOOD, cx, 0, cz + 4.8);
+  // Stützen
+  addBox(0.25, 3.5, 0.25, 0x5c3817, cx - 5.5, 0, cz + 4.2);
+  addBox(0.25, 3.5, 0.25, 0x5c3817, cx + 5.5, 0, cz + 4.2);
+  // Schild
+  addBox(6.5, 1.3, 0.25, 0xf1c40f, cx, 3.8, cz + 3.6);
+  // Tür & Fenster
+  addBox(1.8, 2.9, 0.18, 0x3d2714, cx, 0, cz + 3.6);
+  addBox(1.6, 1.2, 0.15, 0x74b9ff, cx - 3.4, 2.2, cz + 3.6);
+  addBox(1.6, 1.2, 0.15, 0x74b9ff, cx + 3.4, 2.2, cz + 3.6);
+  // Markt-Verkaufstisch mit bunten Früchten
+  addBox(5.5, 1.1, 1.6, 0x6e4720, cx, 0, cz + 4.8);
+  for (let i = -1; i <= 1; i++) {
+    const fruitMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 8, 8),
+      new THREE.MeshStandardMaterial({ color: (i < 0) ? 0xe74c3c : (i === 0) ? 0xf1c40f : 0x2ecc71 })
+    );
+    fruitMesh.position.set(cx + i * 1.6, 1.4, cz + 4.8);
+    scene.add(fruitMesh);
+  }
 })();
 
 // ── TEICH / BRUNNEN (x = 0, z = -36) ──
@@ -868,7 +909,7 @@ function addBox(w, h, d, colorOrMat, x, y, z, cast=true, receive=true) {
   pond.rotation.x = -Math.PI / 2;
   pond.position.set(cx, 0.05, cz);
   scene.add(pond);
-  const rim = new THREE.Mesh(new THREE.RingGeometry(10, 11.8, 36), new THREE.MeshStandardMaterial({ map: TEX_ROAD, roughness: 0.9 }));
+  const rim = new THREE.Mesh(new THREE.RingGeometry(10, 11.8, 36), new THREE.MeshStandardMaterial({ color: 0x7f8c8d, roughness: 0.9 }));
   rim.rotation.x = -Math.PI / 2;
   rim.position.set(cx, 0.07, cz);
   scene.add(rim);
@@ -879,7 +920,7 @@ let campfireLight;
 (function buildCampfire() {
   const cx = 0, cz = -8;
   for (let i = 0; i < 3; i++) {
-    const log = addBox(1.8, 0.25, 0.35, TEX_WOOD, cx, 0, cz);
+    const log = addBox(1.8, 0.25, 0.35, 0x5c3817, cx, 0, cz);
     log.rotation.y = i * 1.05;
   }
   campfireLight = new THREE.PointLight(0xff7700, 1.5, 14);
@@ -887,21 +928,20 @@ let campfireLight;
   scene.add(campfireLight);
 })();
 
-// Bäume in der Landschaft
+// Bäume
 (function makeTrees() {
   for (let i = 0; i < 28; i++) {
-    let tx = (Math.random() - 0.5) * 120;
-    let tz = (Math.random() - 0.5) * 120;
-    // Nicht auf dem Beet-Feld oder bei den Shops spawnen
+    let tx = (Math.random() - 0.5) * 130;
+    let tz = (Math.random() - 0.5) * 130;
     if (Math.abs(tx) < 18 && tz > -12 && tz < 20) continue;
     if (Math.abs(tx - 24) < 10 && Math.abs(tz + 14) < 10) continue;
     if (Math.abs(tx + 24) < 10 && Math.abs(tz + 14) < 10) continue;
-    if (Math.abs(tx) < 12 && tz < -26) continue;
+    if (Math.abs(tx) < 14 && tz < -26) continue;
 
-    const th = 2.5 + Math.random() * 1.2;
-    addBox(0.4, th, 0.4, TEX_WOOD, tx, 0, tz);
+    const th = 2.6 + Math.random() * 1.2;
+    addBox(0.45, th, 0.45, 0x5c3817, tx, 0, tz);
     const crown = new THREE.Mesh(
-      new THREE.SphereGeometry(1.4 + Math.random()*0.5, 8, 6),
+      new THREE.SphereGeometry(1.5 + Math.random()*0.5, 8, 6),
       new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.95 })
     );
     crown.position.set(tx, th + 0.8, tz);
@@ -911,12 +951,11 @@ let campfireLight;
 })();
 
 // ── DAS NORMALE KLASSISCHE GARTEN-FELD (25 BEETE IN DER MITTE) ──
-const plots = []; // 25 Beete (5x5 Gitter von x=-10 bis +10, z=-6 bis +14)
+const plots = [];
 
 (function initClassicPlots() {
   for (let z = -6; z <= 14; z += 5) {
     for (let x = -10; x <= 10; x += 5) {
-      // Erde-Beet
       const bed = new THREE.Mesh(
         new THREE.BoxGeometry(3.6, 0.24, 3.6),
         new THREE.MeshStandardMaterial({ map: TEX_SOIL, roughness: 0.95 })
@@ -926,11 +965,10 @@ const plots = []; // 25 Beete (5x5 Gitter von x=-10 bis +10, z=-6 bis +14)
       scene.add(bed);
 
       // Holz-Umrandung
-      const borderMat = new THREE.MeshStandardMaterial({ map: TEX_WOOD, roughness: 0.9 });
-      addBox(3.8, 0.3, 0.14, borderMat, x, 0, z - 1.85);
-      addBox(3.8, 0.3, 0.14, borderMat, x, 0, z + 1.85);
-      addBox(0.14, 0.3, 3.8, borderMat, x - 1.85, 0, z);
-      addBox(0.14, 0.3, 3.8, borderMat, x + 1.85, 0, z);
+      addBox(3.8, 0.3, 0.14, 0x6e4720, x, 0, z - 1.85);
+      addBox(3.8, 0.3, 0.14, 0x6e4720, x, 0, z + 1.85);
+      addBox(0.14, 0.3, 3.8, 0x6e4720, x - 1.85, 0, z);
+      addBox(0.14, 0.3, 3.8, 0x6e4720, x + 1.85, 0, z);
 
       plots.push({
         id: plots.length,
@@ -943,13 +981,12 @@ const plots = []; // 25 Beete (5x5 Gitter von x=-10 bis +10, z=-6 bis +14)
   }
 })();
 
-// ── WUNDERSCHÖNE 3D-BLUMEN MIT BLÜTENBLÄTTERN (PETALS) WIE IN GROW A GARDEN ──
+// ── WUNDERSCHÖNE 3D-BLUMEN MIT BLÜTENBLÄTTERN (PETALS) ──
 function makeFlowerCrop(plantTypeIdx, stage) {
   const g = new THREE.Group();
   const plantDef = PLANTS[plantTypeIdx];
   if (!plantDef) return g;
 
-  // Stufe 0: Kleiner grüner Keimling mit 2 Keimblättern
   if (stage <= 0) {
     const sproutStem = new THREE.Mesh(
       new THREE.CylinderGeometry(0.04, 0.05, 0.28, 6),
@@ -970,11 +1007,9 @@ function makeFlowerCrop(plantTypeIdx, stage) {
     return g;
   }
 
-  // Stufen 1 bis 5: Blume wächst empor und öffnet ihre Blütenblätter
-  const progress = stage / 5.0; // 0.2 bis 1.0
-  const totalHeight = 0.7 + progress * 0.95; // Stängel-Höhe
+  const progress = stage / 5.0;
+  const totalHeight = 0.7 + progress * 0.95;
 
-  // Stängel (kräftig grüner, natürlicher Pflanzenstängel)
   const stemMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.8 });
   const stem = new THREE.Mesh(
     new THREE.CylinderGeometry(0.06 + progress*0.02, 0.09 + progress*0.02, totalHeight, 8),
@@ -984,7 +1019,6 @@ function makeFlowerCrop(plantTypeIdx, stage) {
   stem.castShadow = true;
   g.add(stem);
 
-  // 2-4 Blätter an den Seiten des Stängels
   const leafMat = new THREE.MeshStandardMaterial({ color: 0x388e3c, roughness: 0.85 });
   const numLeaves = 2 + (stage >= 3 ? 2 : 0);
   for (let l = 0; l < numLeaves; l++) {
@@ -999,11 +1033,9 @@ function makeFlowerCrop(plantTypeIdx, stage) {
     g.add(leaf);
   }
 
-  // ── BLÜTENKOPF OBEN AUF DEM STÄNGEL ──
   const flowerHead = new THREE.Group();
   flowerHead.position.y = totalHeight;
 
-  // Grüner Blütenkelch (Sepal an der Unterseite)
   const sepal = new THREE.Mesh(
     new THREE.ConeGeometry(0.25 * progress, 0.22 * progress, 7),
     leafMat
@@ -1011,9 +1043,8 @@ function makeFlowerCrop(plantTypeIdx, stage) {
   sepal.rotation.x = Math.PI;
   flowerHead.add(sepal);
 
-  // Blütenmitte (Pollen-Zentrum / Disc)
-  const centerColor = (plantTypeIdx === 4) ? 0x5c3817 : // Sonnenblume hat braunes Zentrum
-                      (plantTypeIdx % 2 === 0) ? 0xf1c40f : 0xffa502; // Goldgelbes Zentrum
+  const centerColor = (plantTypeIdx === 4) ? 0x5c3817 :
+                      (plantTypeIdx % 2 === 0) ? 0xf1c40f : 0xffa502;
   const centerMesh = new THREE.Mesh(
     new THREE.SphereGeometry(0.24 + progress * 0.12, 10, 8),
     new THREE.MeshStandardMaterial({ color: centerColor, roughness: 0.45, metalness: 0.1 })
@@ -1022,10 +1053,9 @@ function makeFlowerCrop(plantTypeIdx, stage) {
   centerMesh.position.y = 0.08;
   flowerHead.add(centerMesh);
 
-  // ── ECHTE BLÜTENBLÄTTER (PETALS) IM KREIS ──
   const petalColor = plantDef.color;
-  const numPetals = (plantTypeIdx === 4) ? 12 : // Mais / Sonnenblume: 12 Petals
-                    (plantTypeIdx % 3 === 0) ? 6 : 5; // 5 oder 6 Blütenblätter
+  const numPetals = (plantTypeIdx === 4) ? 12 :
+                    (plantTypeIdx % 3 === 0) ? 6 : 5;
 
   const petalMat = new THREE.MeshStandardMaterial({
     color: petalColor,
@@ -1033,10 +1063,9 @@ function makeFlowerCrop(plantTypeIdx, stage) {
     metalness: 0.05
   });
 
-  // Blüten-Öffnungswinkel: Von geschlossener Knospe bis voll geöffneter Blüte
   const petalSpread = Math.PI * 0.42 * Math.min(1.0, (stage - 1) / 3.0);
-  const petalLen = 0.38 + progress * 0.38; // Länge des Blütenblatts
-  const petalWid = 0.18 + progress * 0.16; // Breite des Blütenblatts
+  const petalLen = 0.38 + progress * 0.38;
+  const petalWid = 0.18 + progress * 0.16;
 
   for (let p = 0; p < numPetals; p++) {
     const angle = (p / numPetals) * Math.PI * 2;
@@ -1049,13 +1078,12 @@ function makeFlowerCrop(plantTypeIdx, stage) {
     const petalHolder = new THREE.Group();
     petalHolder.rotation.y = angle;
     petalMesh.position.z = petalLen * 0.5;
-    petalMesh.rotation.x = -petalSpread; // Nach außen geneigt beim Blühen
+    petalMesh.rotation.x = -petalSpread;
     petalMesh.castShadow = true;
     petalHolder.add(petalMesh);
     flowerHead.add(petalHolder);
   }
 
-  // Bei voller Reife (Stufe 5): Glanz & wunderschöner Schimmer!
   if (stage >= 5) {
     petalMat.emissive = new THREE.Color(petalColor);
     petalMat.emissiveIntensity = 0.28;
@@ -1065,7 +1093,6 @@ function makeFlowerCrop(plantTypeIdx, stage) {
     flowerHead.add(glowLight);
   }
 
-  // Natürliche leichte Neigung
   flowerHead.rotation.z = Math.sin(plantTypeIdx * 1.8) * 0.12;
   flowerHead.rotation.x = Math.cos(plantTypeIdx * 2.4) * 0.12;
 
@@ -1124,49 +1151,144 @@ const playerMesh = buildAvatarMesh(0x27ae60);
 scene.add(playerMesh);
 playerMesh.position.set(0, 0, 4);
 
-// Steuerungsvariablen
+// ── STEUERUNGS- & KAMERA-VARIABLEN (360° UMGUCKEN AUF PC & IPAD) ──
 const keys = {};
 let playerYaw = 0;
-let camDist = 9.5;
-let camHeight = 6.2;
+
+// Kamera Orbit-Winkel
+let camYaw = 0;         // Horizontale 360° Drehung
+let camPitch = 0.42;    // Vertikale Neigung (Blickwinkel von oben)
+let camDist = 10.5;     // Zoom-Distanz
+
 const WALK_SPEED = 0.16;
 const SPRINT_SPEED = 0.26;
 
-window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+window.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+  // Kamera mit Q und E drehen als Tastatur-Shortcut
+  if (e.code === 'KeyQ') camYaw += 0.08;
+  if (e.code === 'KeyE' && !document.getElementById('interactPrompt').style.display === 'block') camYaw -= 0.08;
+});
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-// Touch-Joystick
+// ── MAUS-STEUERUNG ZUM UMGUCKEN AUF DEM PC ──
+let isMouseDragging = false;
+let lastMouseX = 0, lastMouseY = 0;
+
+window.addEventListener('mousedown', (e) => {
+  // Nur drehen, wenn man nicht auf UI-Elemente klickt
+  if (e.target.closest('#setup, .modal, #hud .hud-actions, #hotbar, #interactPrompt')) return;
+  isMouseDragging = true;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isMouseDragging) return;
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+  camYaw -= dx * 0.006;
+  camPitch = Math.max(0.08, Math.min(1.32, camPitch + dy * 0.005));
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+});
+
+window.addEventListener('mouseup', () => { isMouseDragging = false; });
+
+// Mausrad zum Zoomen
+window.addEventListener('wheel', (e) => {
+  camDist = Math.max(4.0, Math.min(22.0, camDist + e.deltaY * 0.012));
+}, { passive: true });
+
+// ── TOUCH-JOYSTICK & KAMERA-WISCHEN AUF DEM IPAD ──
 let joyActive = false;
 let joyDir = { x: 0, y: 0 };
+let joyTouchId = null;
+
+let camTouchId = null;
+let lastTouchX = 0, lastTouchY = 0;
+let initialPinchDist = 0;
+
 const joyElem = document.getElementById('joy');
 const stickElem = document.getElementById('stick');
 
-joyElem.addEventListener('touchstart', (e) => {
-  joyActive = true;
-  handleJoy(e.touches[0]);
-}, { passive: false });
+// Touch Start
+window.addEventListener('touchstart', (e) => {
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const t = e.changedTouches[i];
+    const target = t.target;
 
-window.addEventListener('touchmove', (e) => {
-  if (!joyActive) return;
-  for (let i = 0; i < e.touches.length; i++) {
-    const t = e.touches[i];
+    // Klick auf Buttons/Modals/Hotbar ignorieren
+    if (target.closest('.modal, #hud .hud-actions, #hotbar, #touchActions, #interactPrompt, #setup')) continue;
+
+    // Prüfen, ob der Touch im Joystick-Bereich (unten links) liegt
     const rect = joyElem.getBoundingClientRect();
-    if (t.clientX >= rect.left - 40 && t.clientX <= rect.right + 40 &&
-        t.clientY >= rect.top - 40 && t.clientY <= rect.bottom + 40) {
-      handleJoy(t);
-      break;
+    const inJoyArea = (deviceMode === 'touch' && t.clientX < window.innerWidth * 0.4 && t.clientY > window.innerHeight * 0.5);
+
+    if (inJoyArea && joyTouchId === null) {
+      joyTouchId = t.identifier;
+      joyActive = true;
+      handleJoyTouch(t);
+    } else if (camTouchId === null) {
+      // Touch dient zum Kamera-Umgucken (Swipe überall sonst)
+      camTouchId = t.identifier;
+      lastTouchX = t.clientX;
+      lastTouchY = t.clientY;
     }
   }
 }, { passive: false });
 
-window.addEventListener('touchend', () => {
-  joyActive = false;
-  joyDir = { x: 0, y: 0 };
-  stickElem.style.left = '35px';
-  stickElem.style.top = '35px';
+// Touch Move
+window.addEventListener('touchmove', (e) => {
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const t = e.changedTouches[i];
+
+    // Joystick bewegen
+    if (t.identifier === joyTouchId) {
+      handleJoyTouch(t);
+    }
+    // Kamera umgucken
+    else if (t.identifier === camTouchId) {
+      const dx = t.clientX - lastTouchX;
+      const dy = t.clientY - lastTouchY;
+      camYaw -= dx * 0.007;
+      camPitch = Math.max(0.08, Math.min(1.32, camPitch + dy * 0.006));
+      lastTouchX = t.clientX;
+      lastTouchY = t.clientY;
+    }
+  }
+
+  // Zwei Finger Zoom (Pinch) auf iPad
+  if (e.touches.length === 2) {
+    const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    if (!initialPinchDist) initialPinchDist = d;
+    else {
+      const delta = initialPinchDist - d;
+      camDist = Math.max(4.0, Math.min(22.0, camDist + delta * 0.05));
+      initialPinchDist = d;
+    }
+  }
+}, { passive: false });
+
+// Touch End
+window.addEventListener('touchend', (e) => {
+  for (let i = 0; i < e.changedTouches.length; i++) {
+    const t = e.changedTouches[i];
+    if (t.identifier === joyTouchId) {
+      joyTouchId = null;
+      joyActive = false;
+      joyDir = { x: 0, y: 0 };
+      stickElem.style.left = '35px';
+      stickElem.style.top = '35px';
+    }
+    if (t.identifier === camTouchId) {
+      camTouchId = null;
+      initialPinchDist = 0;
+    }
+  }
 });
 
-function handleJoy(touch) {
+function handleJoyTouch(touch) {
   const rect = joyElem.getBoundingClientRect();
   const cx = rect.left + rect.width / 2;
   const cy = rect.top + rect.height / 2;
@@ -1192,7 +1314,7 @@ function toggleTouchSprint() {
   toast(isTouchSprint ? "⚡ Sprint AN!" : "🚶 Normales Gehen");
 }
 
-console.log("Core Game Engine loaded with Classic Garden and 3D Flowers.");
+console.log("Core Game Engine loaded with 360 camera controls & visible houses.");
 
 
 // Grow World 3D - Mechanics, 3D Blumen & Multiplayer
@@ -1208,10 +1330,10 @@ function getNearPlot(maxDist = 3.2) {
 }
 
 function isNearSeedShop() {
-  return Math.hypot(playerMesh.position.x - 24, playerMesh.position.z - (-14 + 4.5)) < 5.0;
+  return Math.hypot(playerMesh.position.x - 24, playerMesh.position.z - (-14 + 4.5)) < 5.5;
 }
 function isNearSellShop() {
-  return Math.hypot(playerMesh.position.x - (-24), playerMesh.position.z - (-14 + 4.5)) < 5.0;
+  return Math.hypot(playerMesh.position.x - (-24), playerMesh.position.z - (-14 + 4.5)) < 5.5;
 }
 function isNearWell() {
   return Math.hypot(playerMesh.position.x - 0, playerMesh.position.z - (-36)) < 11.0;
@@ -1580,7 +1702,6 @@ function sendAdminBroadcast() {
   toast("📢 Durchsage an alle Spieler gesendet!");
 }
 
-// Fix "Beet leeren": KEIN confirm()!
 function adminClearPlots() {
   plots.forEach((p, idx) => {
     p.plant = null;
@@ -1622,7 +1743,6 @@ function showEventBanner(text, durationMs=7000) {
 }
 
 // ── SAVE-SYSTEM: KOMPAKTER CODE & TEXTDATEI ──
-// Format: GW2#PlayerName#Money#SeedsJson#BasketJson#PlotsString (mit 1=5 etc.)
 function generateCompactSave() {
   const plotStrs = [];
   plots.forEach((p, i) => {
@@ -1761,7 +1881,6 @@ function initWebSocketMultiplayer(roomCode) {
       mqttClient.subscribe("gw3d/rooms/" + currentRoomCode);
       mqttClient.subscribe("gw3d/global_events");
 
-      // Allen mitteilen, dass man im Raum ist
       sendMqtt("gw3d/rooms/" + currentRoomCode, {
         type: "join",
         id: mySessionId,
@@ -1889,7 +2008,7 @@ function closeModal(id) {
   document.getElementById(id).style.display = 'none';
 }
 
-// ── GAME LOOP ──
+// ── GAME LOOP MIT 360° KAMERA & KAMERA-RELATIVER BEWEGUNG ──
 let animTime = 0;
 function animate() {
   requestAnimationFrame(animate);
@@ -1899,6 +2018,7 @@ function animate() {
     campfireLight.intensity = 1.4 + Math.sin(animTime * 8) * 0.3;
   }
 
+  // Eingaben lesen
   let moveX = 0, moveZ = 0;
   if (deviceMode === 'pc') {
     if (keys['KeyW'] || keys['ArrowUp']) moveZ -= 1;
@@ -1915,10 +2035,13 @@ function animate() {
   const currentSpeed = isSprinting ? SPRINT_SPEED : WALK_SPEED;
 
   if (isMoving) {
-    const angle = Math.atan2(moveX, moveZ);
-    playerYaw = angle;
-    playerMesh.position.x += Math.sin(angle) * currentSpeed;
-    playerMesh.position.z += Math.cos(angle) * currentSpeed;
+    // Bewegung immer relativ zur aktuellen Blickrichtung der Kamera!
+    const inputAngle = Math.atan2(moveX, moveZ);
+    const moveYaw = camYaw + inputAngle;
+    playerYaw = moveYaw;
+
+    playerMesh.position.x += Math.sin(moveYaw) * currentSpeed;
+    playerMesh.position.z += Math.cos(moveYaw) * currentSpeed;
 
     const legSwing = Math.sin(animTime * 12) * 0.45;
     playerMesh.legL.rotation.x = legSwing;
@@ -1932,13 +2055,17 @@ function animate() {
 
   playerMesh.rotation.y = playerYaw;
 
-  const targetCamX = playerMesh.position.x - Math.sin(playerYaw) * camDist * 0.4;
-  const targetCamZ = playerMesh.position.z + camDist;
-  camera.position.x += (targetCamX - camera.position.x) * 0.1;
-  camera.position.y += ((playerMesh.position.y + camHeight) - camera.position.y) * 0.1;
-  camera.position.z += (targetCamZ - camera.position.z) * 0.1;
+  // 360° Orbit-Kamera: Berechne sanft die Kamera-Position
+  const targetCamX = playerMesh.position.x - Math.sin(camYaw) * Math.cos(camPitch) * camDist;
+  const targetCamY = playerMesh.position.y + Math.sin(camPitch) * camDist + 1.2;
+  const targetCamZ = playerMesh.position.z - Math.cos(camYaw) * Math.cos(camPitch) * camDist;
+
+  camera.position.x += (targetCamX - camera.position.x) * 0.18;
+  camera.position.y += (targetCamY - camera.position.y) * 0.18;
+  camera.position.z += (targetCamZ - camera.position.z) * 0.18;
   camera.lookAt(playerMesh.position.x, playerMesh.position.y + 1.2, playerMesh.position.z);
 
+  // Entfernte Spieler aktualisieren
   const now = Date.now();
   for (let id in remotePlayers) {
     const rp = remotePlayers[id];
@@ -2006,7 +2133,7 @@ window.addEventListener('resize', () => {
 });
 
 animate();
-console.log("Game Mechanics successfully initialized.");
+console.log("Game Mechanics successfully initialized with 360 camera & relative motion.");
 
 </script>
 </body>
