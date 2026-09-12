@@ -158,6 +158,42 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
 }
 .mp-box p { font-size: 11px; opacity: 0.7; margin-bottom: 8px; line-height: 1.4; }
 
+/* ── TELEPORT LEISTE OBEN ── */
+#tpBar {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  gap: 8px;
+  background: rgba(6, 26, 16, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(80, 220, 120, 0.35);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+}
+.tp-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-radius: 14px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.tp-btn:hover, .tp-btn:active {
+  background: rgba(85, 224, 136, 0.3);
+  border-color: #55e088;
+  transform: scale(1.04);
+}
 /* ── INGAME HUD ── */
 .hud { position: fixed; top: 14px; left: 14px; z-index: 10; pointer-events: none; }
 .hud-card {
@@ -372,6 +408,12 @@ canvas { display: block; width: 100% !important; height: 100% !important; }
   <div class="hud-card hud-small" id="timeCard">🌅 Morgen</div>
 </div>
 <div id="mpStatus" class="hud-card hud-small">🌐 Freunde online</div>
+<!-- ── TELEPORT LEISTE (SCHNELLREISE OBEN) ── -->
+<div id="tpBar">
+  <button class="tp-btn" onclick="teleportTo('farm')" ontouchend="teleportTo('farm')">🌾 Mein Garten</button>
+  <button class="tp-btn" onclick="teleportTo('seedShop')" ontouchend="teleportTo('seedShop')">🛒 Samen-Shop</button>
+  <button class="tp-btn" onclick="teleportTo('sellShop')" ontouchend="teleportTo('sellShop')">💰 Markt</button>
+</div>
 
 <!-- ── PROXIMITY PROMPT ── -->
 <div id="interactPrompt" onclick="triggerInteract()"></div>
@@ -1399,6 +1441,21 @@ renderer.domElement.addEventListener('pointermove', e => {
 });
 window.addEventListener('pointerup', () => { camDown = false; });
 
+function teleportTo(dest) {
+  if (dest === 'farm') {
+    player.position.set(0, 0, 8);
+    yaw = 0; pitch = 0.45;
+    toast('⚡ Zu deinen Beeten teleportiert!');
+  } else if (dest === 'seedShop') {
+    player.position.set(SEED_SHOP_POS.x, 0, SEED_SHOP_POS.z + 5.5);
+    yaw = 0; pitch = 0.4;
+    toast('⚡ Zum Samen-Shop teleportiert!');
+  } else if (dest === 'sellShop') {
+    player.position.set(SELL_SHOP_POS.x, 0, SELL_SHOP_POS.z + 5.5);
+    yaw = 0; pitch = 0.4;
+    toast('⚡ Zum Verkaufs-Markt teleportiert!');
+  }
+}
 function applyDeviceModeUI() {
   const hotbar = document.getElementById('hotbar');
   if (chosenMode === 'pc') {
@@ -1413,9 +1470,9 @@ function applyDeviceModeUI() {
     joy.style.display = 'block';
     document.getElementById('pcHint').style.display = 'none';
     if (hotbar) {
-      hotbar.style.left = 'auto';
-      hotbar.style.right = '14px';
-      hotbar.style.transform = 'none';
+      hotbar.style.left = '50%';
+      hotbar.style.right = 'auto';
+      hotbar.style.transform = 'translateX(-50%)';
     }
   }
 }
